@@ -1,0 +1,49 @@
+# set here the same port as in .env file
+@port=4000
+
+@localhost=http://localhost:{{port}}
+
+# base API url
+@baseAPI={{localhost}}
+
+# user API url
+@userAPI={{baseAPI}}/user
+
+# set userId that you want to test  
+@userId=2b69ad3d-4057-47bd-b343-b1ddd51b77eb
+
+
+### Get all users
+GET {{userAPI}}
+
+
+### Create user
+POST {{userAPI}}
+content-type: application/json
+
+{
+  "login": "login",
+  "password": "password"
+}
+
+
+### Get user by id
+GET {{userAPI}}/{{userId}}
+
+
+### Update user by id 
+PUT {{userAPI}}/{{userId}}
+content-type: application/json
+
+{
+  "oldPassword": "password",
+  "newPassword": "new_password"
+}
+
+
+### Delete user by id
+DELETE {{userAPI}}/{{userId}}
+
+
+### Test bad request
+GET {{localhost}}/some/route
