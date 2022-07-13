@@ -4,13 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
-import { User, UserWithoutPassword } from './interfaces/users.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { Database } from 'src/database/database';
+import { User, UserWithoutPassword } from 'src/interfaces';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [];
+  constructor(private db: Database) {}
 
   async create(user: CreateUserDto): Promise<UserWithoutPassword> {
     const timestamp = new Date().getTime();
@@ -22,16 +23,18 @@ export class UsersService {
       updatedAt: timestamp,
     };
 
-    this.users.push(newUser);
+    this.db.users.addUser(newUser);
     return this.getUserWithoutPassword(newUser);
   }
 
   async findAll(): Promise<UserWithoutPassword[]> {
-    return this.users.map((user) => this.getUserWithoutPassword(user));
+    return this.db.users
+      .findAll()
+      .map((user) => this.getUserWithoutPassword(user));
   }
 
   async findOne(id: string): Promise<UserWithoutPassword> {
-    const user = this.findUserById(id);
+    const user = this.db.users.findOne(id);
     if (!user) {
       throw new NotFoundException(`User with ${id} doesn't exist`);
     }
@@ -43,7 +46,7 @@ export class UsersService {
     id: string,
     { oldPassword, newPassword }: UpdatePasswordDto,
   ) {
-    const user = this.findUserById(id);
+    const user = this.db.users.findOne(id);
     if (!user) {
       throw new NotFoundException(`User with ${id} doesn't exist`);
     }
@@ -59,12 +62,12 @@ export class UsersService {
   }
 
   async deleteOne(id: string) {
-    const user = this.findUserById(id);
+    const user = this.db.users.findOne(id);
     if (!user) {
       throw new NotFoundException(`User with ${id} doesn't exist`);
     }
 
-    this.users = this.users.filter(({ id: userId }) => id !== userId);
+    this.db.users.deleteOne(id);
   }
 
   private getUserWithoutPassword({
@@ -73,9 +76,5 @@ export class UsersService {
     ...rest
   }: User): UserWithoutPassword {
     return rest;
-  }
-
-  private findUserById(id: string): User {
-    return this.users.find(({ id: userId }) => userId === id) || null;
   }
 }
