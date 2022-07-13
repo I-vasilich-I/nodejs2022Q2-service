@@ -45,5 +45,6 @@ content-type: application/json
 DELETE {{userAPI}}/{{userId}}
 
 
+
 ### Test bad request
 GET {{localhost}}/some/route

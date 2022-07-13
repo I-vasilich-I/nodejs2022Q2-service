@@ -8,3 +8,9 @@ export interface User {
 }
 
 export type UserWithoutPassword = Omit<User, 'password'>;
+
+export interface Artist {
+  id: string; // uuid v4
+  name: string;
+  grammy: boolean;
+}

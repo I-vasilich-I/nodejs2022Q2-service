@@ -9,9 +9,9 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { UserWithoutPassword } from './interfaces/users.interface';
-import { CreateUserDto } from './dto/create-user.dto';
+import { UserWithoutPassword } from 'src/interfaces';
 import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller('user')
