@@ -39,7 +39,7 @@ export class ArtistsService {
       artist.name = name;
     }
 
-    if (grammy) {
+    if (grammy !== undefined) {
       artist.grammy = grammy;
     }
 
