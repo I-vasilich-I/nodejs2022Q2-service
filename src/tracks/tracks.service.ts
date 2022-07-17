@@ -1,12 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import { DatabaseService } from 'src/database/database.service';
 import { v4 as uuid } from 'uuid';
-import { Database } from 'src/database/database';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 
 @Injectable()
 export class TracksService {
-  constructor(private db: Database) {}
+  constructor(private db: DatabaseService) {}
 
   async findAll() {
     return this.db.tracks.findAll();
@@ -18,11 +22,13 @@ export class TracksService {
     return newTrack;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, fav = false) {
     const track = this.db.tracks.findOne(id);
 
     if (!track) {
-      throw new NotFoundException(`Track with id: ${id} doesn't exist`);
+      const Exception = fav ? UnprocessableEntityException : NotFoundException;
+
+      throw new Exception(`Track with id: ${id} doesn't exist`);
     }
 
     return track;

@@ -5,7 +5,7 @@ import { TracksEntity } from './entities/tracks.entity';
 import { UsersEntity } from './entities/users.entity';
 
 @Injectable()
-export class Database {
+export class DatabaseService {
   users = new UsersEntity();
   artists = new ArtistsEntity();
   albums = new AlbumsEntity();

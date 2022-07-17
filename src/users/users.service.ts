@@ -6,12 +6,12 @@ import {
 import { v4 as uuid } from 'uuid';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { Database } from 'src/database/database';
 import { User, UserWithoutPassword } from 'src/interfaces';
+import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private db: Database) {}
+  constructor(private db: DatabaseService) {}
 
   async create(user: CreateUserDto): Promise<UserWithoutPassword> {
     const timestamp = new Date().getTime();

@@ -18,4 +18,12 @@ export class TracksEntity {
   deleteOne(id: string) {
     this.tracks = this.tracks.filter(({ id: trackId }) => id !== trackId);
   }
+
+  findAllByAlbumId(id: string) {
+    return this.tracks.filter(({ albumId }) => albumId === id);
+  }
+
+  findAllByArtistId(id: string) {
+    return this.tracks.filter(({ artistId }) => artistId === id);
+  }
 }

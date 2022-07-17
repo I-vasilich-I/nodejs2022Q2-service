@@ -1,12 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import { DatabaseService } from 'src/database/database.service';
 import { v4 as uuid } from 'uuid';
-import { Database } from 'src/database/database';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 
 @Injectable()
 export class ArtistsService {
-  constructor(private db: Database) {}
+  constructor(private db: DatabaseService) {}
 
   async findAll() {
     return this.db.artists.findAll();
@@ -18,11 +22,13 @@ export class ArtistsService {
     return newArtist;
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, fav = false) {
     const artist = this.db.artists.findOne(id);
 
     if (!artist) {
-      throw new NotFoundException(`Artist with id: ${id} doesn't exist`);
+      const Exception = fav ? UnprocessableEntityException : NotFoundException;
+
+      throw new Exception(`Artist with id: ${id} doesn't exist`);
     }
 
     return artist;
@@ -47,12 +53,15 @@ export class ArtistsService {
   }
 
   async deleteOne(id: string) {
-    const artist = this.db.artists.findOne(id);
-
-    if (!artist) {
-      throw new NotFoundException(`User with id: ${id} doesn't exist`);
-    }
-
+    await this.findOne(id);
     this.db.artists.deleteOne(id);
+    const tracks = this.db.tracks.findAllByArtistId(id);
+
+    if (tracks) {
+      tracks.map((track) => {
+        track.artistId = null;
+        return track;
+      });
+    }
   }
 }
