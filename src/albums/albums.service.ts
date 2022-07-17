@@ -68,5 +68,7 @@ export class AlbumsService {
         return track;
       });
     }
+
+    this.db.favorites.deleteAlbum(id);
   }
 }

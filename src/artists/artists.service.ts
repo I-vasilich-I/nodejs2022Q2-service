@@ -63,5 +63,7 @@ export class ArtistsService {
         return track;
       });
     }
+
+    this.db.favorites.deleteArtist(id);
   }
 }

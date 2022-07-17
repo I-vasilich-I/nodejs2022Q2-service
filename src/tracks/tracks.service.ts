@@ -62,5 +62,6 @@ export class TracksService {
   async deleteOne(id: string) {
     await this.findOne(id);
     this.db.tracks.deleteOne(id);
+    this.db.favorites.deleteTrack(id);
   }
 }
