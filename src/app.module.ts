@@ -5,9 +5,10 @@ import { UsersModule } from './users/users.module';
 import { AlbumsModule } from './albums/albums.module';
 import { TracksModule } from './tracks/tracks.module';
 import { DatabaseModule } from './database/database.module';
-import { FavoritesModule } from './favorites/favorites.module';
+// import { FavoritesModule } from './favorites/favorites.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './users/entities/user.entity';
+import { ArtistEntity } from './artists/entities/artist.entity';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { UserEntity } from './users/entities/user.entity';
     ArtistsModule,
     AlbumsModule,
     TracksModule,
-    FavoritesModule,
+    // FavoritesModule,
     DatabaseModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
@@ -25,7 +26,7 @@ import { UserEntity } from './users/entities/user.entity';
       username: process.env.POSTGRES_USER as string,
       password: process.env.POSTGRES_PASSWORD as string,
       database: process.env.POSTGRES_DB as string,
-      entities: [UserEntity],
+      entities: [UserEntity, ArtistEntity],
       synchronize: true,
     }),
   ],

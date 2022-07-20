@@ -15,10 +15,10 @@ export class UserEntity implements User {
   @VersionColumn()
   version: number;
 
-  @Column()
+  @Column('bigint')
   createdAt: number;
 
-  @Column()
+  @Column('bigint')
   updatedAt: number;
 
   toResponse() {
