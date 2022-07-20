@@ -3,27 +3,31 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
-import { v4 as uuid } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
+import { TrackEntity } from './entities/track.entity';
 
 @Injectable()
 export class TracksService {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    @InjectRepository(TrackEntity)
+    private trackRepository: Repository<TrackEntity>,
+  ) {}
 
   async findAll() {
-    return this.db.tracks.findAll();
+    return await this.trackRepository.find();
   }
 
   async create(track: CreateTrackDto) {
-    const newTrack = { id: uuid(), ...track };
-    this.db.tracks.addOne(newTrack);
-    return newTrack;
+    const createdTrack = this.trackRepository.create(track);
+    const savedTrack = await this.trackRepository.save(createdTrack);
+    return savedTrack;
   }
 
   async findOne(id: string, fav = false) {
-    const track = this.db.tracks.findOne(id);
+    const track = this.trackRepository.findOneBy({ id });
 
     if (!track) {
       const Exception = fav ? UnprocessableEntityException : NotFoundException;
@@ -56,12 +60,14 @@ export class TracksService {
       track.albumId = albumId;
     }
 
-    return track;
+    const updatedTrack = await this.trackRepository.save(track);
+
+    return updatedTrack;
   }
 
   async deleteOne(id: string) {
     await this.findOne(id);
-    this.db.tracks.deleteOne(id);
-    this.db.favorites.deleteTrack(id);
+    await this.trackRepository.delete(id);
+    // this.db.favorites.deleteTrack(id);
   }
 }
