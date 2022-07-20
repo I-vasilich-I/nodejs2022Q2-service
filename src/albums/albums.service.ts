@@ -3,32 +3,31 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
-import { v4 as uuid } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
+import { AlbumEntity } from './entities/album.entity';
 
 @Injectable()
 export class AlbumsService {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    @InjectRepository(AlbumEntity)
+    private albumRepository: Repository<AlbumEntity>,
+  ) {}
 
   async findAll() {
-    return this.db.albums.findAll();
+    return await this.albumRepository.find();
   }
 
   async create(album: CreateAlbumDto) {
-    const newAlbum = { id: uuid(), ...album };
-
-    if (!album.artistId) {
-      newAlbum.artistId = null;
-    }
-
-    this.db.albums.addOne(newAlbum);
-    return newAlbum;
+    const createdAlbum = this.albumRepository.create(album);
+    const savedAlbum = await this.albumRepository.save(createdAlbum);
+    return savedAlbum;
   }
 
   async findOne(id: string, fav = false) {
-    const album = this.db.albums.findOne(id);
+    const album = await this.albumRepository.findOneBy({ id });
 
     if (!album) {
       const Exception = fav ? UnprocessableEntityException : NotFoundException;
@@ -54,21 +53,23 @@ export class AlbumsService {
       album.artistId = artistId;
     }
 
-    return album;
+    const updatedAlbum = await this.albumRepository.save(album);
+
+    return updatedAlbum;
   }
 
   async deleteOne(id: string) {
     await this.findOne(id);
-    this.db.albums.deleteOne(id);
-    const tracks = this.db.tracks.findAllByAlbumId(id);
+    await this.albumRepository.delete(id);
+    // const tracks = this.db.tracks.findAllByAlbumId(id);
 
-    if (tracks) {
-      tracks.map((track) => {
-        track.albumId = null;
-        return track;
-      });
-    }
+    // if (tracks) {
+    //   tracks.map((track) => {
+    //     track.albumId = null;
+    //     return track;
+    //   });
+    // }
 
-    this.db.favorites.deleteAlbum(id);
+    // this.db.favorites.deleteAlbum(id);
   }
 }
