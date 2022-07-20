@@ -6,6 +6,8 @@ import { AlbumsModule } from './albums/albums.module';
 import { TracksModule } from './tracks/tracks.module';
 import { DatabaseModule } from './database/database.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserEntity } from './users/entities/user.entity';
 
 @Module({
   imports: [
@@ -16,6 +18,16 @@ import { FavoritesModule } from './favorites/favorites.module';
     FavoritesModule,
     DatabaseModule,
     ConfigModule.forRoot(),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'postgres',
+      port: +(process.env.POSTGRES_PORT as string) as number,
+      username: process.env.POSTGRES_USER as string,
+      password: process.env.POSTGRES_PASSWORD as string,
+      database: process.env.POSTGRES_DB as string,
+      entities: [UserEntity],
+      synchronize: true,
+    }),
   ],
   controllers: [],
   providers: [],
