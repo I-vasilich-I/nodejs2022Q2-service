@@ -4,13 +4,13 @@ import { ArtistsModule } from './artists/artists.module';
 import { UsersModule } from './users/users.module';
 import { AlbumsModule } from './albums/albums.module';
 import { TracksModule } from './tracks/tracks.module';
-import { DatabaseModule } from './database/database.module';
-// import { FavoritesModule } from './favorites/favorites.module';
+import { FavoritesModule } from './favorites/favorites.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './users/entities/user.entity';
 import { ArtistEntity } from './artists/entities/artist.entity';
 import { AlbumEntity } from './albums/entities/album.entity';
 import { TrackEntity } from './tracks/entities/track.entity';
+import { FavoritesEntity } from './favorites/entities/favorites.entity';
 
 @Module({
   imports: [
@@ -18,8 +18,7 @@ import { TrackEntity } from './tracks/entities/track.entity';
     ArtistsModule,
     AlbumsModule,
     TracksModule,
-    // FavoritesModule,
-    DatabaseModule,
+    FavoritesModule,
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -28,7 +27,13 @@ import { TrackEntity } from './tracks/entities/track.entity';
       username: process.env.POSTGRES_USER as string,
       password: process.env.POSTGRES_PASSWORD as string,
       database: process.env.POSTGRES_DB as string,
-      entities: [UserEntity, ArtistEntity, AlbumEntity, TrackEntity],
+      entities: [
+        UserEntity,
+        ArtistEntity,
+        AlbumEntity,
+        TrackEntity,
+        FavoritesEntity,
+      ],
       synchronize: true,
     }),
   ],

@@ -4,6 +4,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TracksService } from 'src/tracks/tracks.service';
 import { Repository } from 'typeorm';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
@@ -14,6 +15,7 @@ export class AlbumsService {
   constructor(
     @InjectRepository(AlbumEntity)
     private albumRepository: Repository<AlbumEntity>,
+    private trackService: TracksService,
   ) {}
 
   async findAll() {
@@ -61,14 +63,7 @@ export class AlbumsService {
   async deleteOne(id: string) {
     await this.findOne(id);
     await this.albumRepository.delete(id);
-    // const tracks = this.db.tracks.findAllByAlbumId(id);
-
-    // if (tracks) {
-    //   tracks.map((track) => {
-    //     track.albumId = null;
-    //     return track;
-    //   });
-    // }
+    await this.trackService.removeAlbumIdFromTracks(id);
 
     // this.db.favorites.deleteAlbum(id);
   }

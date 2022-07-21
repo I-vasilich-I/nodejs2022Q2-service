@@ -20,6 +20,28 @@ export class TracksService {
     return await this.trackRepository.find();
   }
 
+  async removeAlbumIdFromTracks(albumId: string) {
+    const tracks = await this.trackRepository.find({ where: { albumId } });
+
+    const mappedTracks = tracks.map((track) => {
+      track.albumId = null;
+      return track;
+    });
+
+    await this.trackRepository.save(mappedTracks);
+  }
+
+  async removeArtistIdFromTracks(artistId: string) {
+    const tracks = await this.trackRepository.find({ where: { artistId } });
+
+    const mappedTracks = tracks.map((track) => {
+      track.artistId = null;
+      return track;
+    });
+
+    await this.trackRepository.save(mappedTracks);
+  }
+
   async create(track: CreateTrackDto) {
     const createdTrack = this.trackRepository.create(track);
     const savedTrack = await this.trackRepository.save(createdTrack);
@@ -27,7 +49,7 @@ export class TracksService {
   }
 
   async findOne(id: string, fav = false) {
-    const track = this.trackRepository.findOneBy({ id });
+    const track = await this.trackRepository.findOneBy({ id });
 
     if (!track) {
       const Exception = fav ? UnprocessableEntityException : NotFoundException;
