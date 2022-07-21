@@ -101,10 +101,7 @@ export class FavoritesService {
       );
     }
 
-    const favorites = await this.getFavorites();
-    favorites.tracks = favorites.tracks.filter((id) => id !== trackId);
-
-    await this.getSavedFavorites(favorites);
+    await this.deleteTrackFromDb(trackId);
   }
 
   async addAlbum(albumId: string) {
@@ -126,10 +123,7 @@ export class FavoritesService {
       );
     }
 
-    const favorites = await this.getFavorites();
-    favorites.albums = favorites.albums.filter((id) => id !== albumId);
-
-    await this.getSavedFavorites(favorites);
+    await this.deleteAlbumFromDb(albumId);
   }
 
   async addArtist(artistId: string) {
@@ -151,8 +145,26 @@ export class FavoritesService {
       );
     }
 
+    await this.deleteArtistFromDb(artistId);
+  }
+
+  async deleteAlbumFromDb(albumId: string) {
+    const favorites = await this.getFavorites();
+    favorites.albums = favorites.albums.filter((id) => id !== albumId);
+
+    await this.getSavedFavorites(favorites);
+  }
+
+  async deleteArtistFromDb(artistId: string) {
     const favorites = await this.getFavorites();
     favorites.artists = favorites.artists.filter((id) => id !== artistId);
+
+    await this.getSavedFavorites(favorites);
+  }
+
+  async deleteTrackFromDb(trackId: string) {
+    const favorites = await this.getFavorites();
+    favorites.tracks = favorites.tracks.filter((id) => id !== trackId);
 
     await this.getSavedFavorites(favorites);
   }
