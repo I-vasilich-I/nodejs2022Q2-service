@@ -1,5 +1,7 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { Artist } from 'src/interfaces';
+import { FavoritesEntity } from 'src/favorites/entities/favorites.entity';
 
 @Entity('artist')
 export class ArtistEntity implements Artist {
@@ -11,4 +13,11 @@ export class ArtistEntity implements Artist {
 
   @Column('boolean')
   grammy: boolean;
+
+  @Exclude()
+  @ManyToOne(() => FavoritesEntity, (favorites) => favorites.artists, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  favorites: FavoritesEntity;
 }

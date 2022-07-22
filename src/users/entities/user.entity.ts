@@ -1,4 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn, VersionColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  VersionColumn,
+} from 'typeorm';
+import { Exclude, Transform } from 'class-transformer';
 import { User } from 'src/interfaces';
 
 @Entity('user')
@@ -9,20 +17,18 @@ export class UserEntity implements User {
   @Column()
   login: string;
 
+  @Exclude()
   @Column()
   password: string;
 
   @VersionColumn()
   version: number;
 
-  @Column('bigint')
+  @Transform(({ value }) => new Date(value).getTime())
+  @CreateDateColumn()
   createdAt: number;
 
-  @Column('bigint')
+  @Transform(({ value }) => new Date(value).getTime())
+  @UpdateDateColumn()
   updatedAt: number;
-
-  toResponse() {
-    const { id, login, version, createdAt, updatedAt } = this;
-    return { id, login, version, createdAt: +createdAt, updatedAt: +updatedAt };
-  }
 }

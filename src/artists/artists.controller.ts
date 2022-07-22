@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -8,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Artist } from 'src/interfaces';
 import { ArtistsService } from './artists.service';
@@ -18,22 +20,26 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 export class ArtistsController {
   constructor(private artistsService: ArtistsService) {}
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
   async findAll(): Promise<Artist[]> {
     return await this.artistsService.findAll();
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Post()
   @HttpCode(201)
   async create(@Body() createArtist: CreateArtistDto): Promise<Artist> {
     return await this.artistsService.create(createArtist);
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return await this.artistsService.findOne(id);
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Put(':id')
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,

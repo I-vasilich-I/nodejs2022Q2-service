@@ -18,22 +18,13 @@ export class UsersService {
   ) {}
 
   async create(user: CreateUserDto): Promise<UserWithoutPassword> {
-    const timestamp = Date.now();
-    const newUser = {
-      ...user,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    };
+    const createdUser = this.usersRepository.create(user);
 
-    const createdUser = this.usersRepository.create(newUser);
-    const savedUser = await this.usersRepository.save(createdUser);
-
-    return savedUser.toResponse();
+    return await this.usersRepository.save(createdUser);
   }
 
   async findAll(): Promise<UserWithoutPassword[]> {
-    const users = await this.usersRepository.find();
-    return users.map((user) => user.toResponse());
+    return await this.usersRepository.find();
   }
 
   async findOne(id: string): Promise<UserWithoutPassword> {
@@ -43,7 +34,7 @@ export class UsersService {
       throw new NotFoundException(`User with id: ${id} doesn't exist`);
     }
 
-    return user.toResponse();
+    return user;
   }
 
   async updatePassword(
@@ -61,11 +52,8 @@ export class UsersService {
     }
 
     user.password = newPassword;
-    user.updatedAt = Date.now();
 
-    const savedUser = await this.usersRepository.save(user);
-
-    return savedUser.toResponse();
+    return await this.usersRepository.save(user);
   }
 
   async deleteOne(id: string) {

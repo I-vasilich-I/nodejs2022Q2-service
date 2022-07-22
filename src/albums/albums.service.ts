@@ -6,11 +6,10 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FavoritesService } from 'src/favorites/favorites.service';
-import { TracksService } from 'src/tracks/tracks.service';
 import { Repository } from 'typeorm';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
+import { ArtistsService } from 'src/artists/artists.service';
 import { AlbumEntity } from './entities/album.entity';
 
 @Injectable()
@@ -18,20 +17,19 @@ export class AlbumsService {
   constructor(
     @InjectRepository(AlbumEntity)
     private albumRepository: Repository<AlbumEntity>,
-    @Inject(forwardRef(() => TracksService))
-    private trackService: TracksService,
-    @Inject(forwardRef(() => FavoritesService))
-    private favoriteService: FavoritesService,
+    @Inject(forwardRef(() => ArtistsService))
+    private artistService: ArtistsService,
   ) {}
 
   async findAll() {
     return await this.albumRepository.find();
   }
 
-  async create(album: CreateAlbumDto) {
-    const createdAlbum = this.albumRepository.create(album);
-    const savedAlbum = await this.albumRepository.save(createdAlbum);
-    return savedAlbum;
+  async create({ name, year, artistId }: CreateAlbumDto) {
+    const artist = artistId ? await this.artistService.findOne(artistId) : null;
+    const createdAlbum = this.albumRepository.create({ name, year, artist });
+
+    return await this.albumRepository.save(createdAlbum);
   }
 
   async findOne(id: string, fav = false) {
@@ -57,19 +55,17 @@ export class AlbumsService {
       album.year = year;
     }
 
-    if (artistId) {
-      album.artistId = artistId;
+    if (artistId !== undefined) {
+      album.artist = artistId
+        ? await this.artistService.findOne(artistId)
+        : null;
     }
 
-    const updatedAlbum = await this.albumRepository.save(album);
-
-    return updatedAlbum;
+    return await this.albumRepository.save(album);
   }
 
   async deleteOne(id: string) {
     await this.findOne(id);
     await this.albumRepository.delete(id);
-    await this.trackService.removeAlbumIdFromTracks(id);
-    await this.favoriteService.deleteAlbumFromDb(id);
   }
 }

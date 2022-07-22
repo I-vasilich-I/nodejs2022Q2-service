@@ -6,8 +6,9 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FavoritesService } from 'src/favorites/favorites.service';
 import { Repository } from 'typeorm';
+import { AlbumsService } from 'src/albums/albums.service';
+import { ArtistsService } from 'src/artists/artists.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 import { TrackEntity } from './entities/track.entity';
@@ -17,38 +18,26 @@ export class TracksService {
   constructor(
     @InjectRepository(TrackEntity)
     private trackRepository: Repository<TrackEntity>,
-    @Inject(forwardRef(() => FavoritesService))
-    private favoriteService: FavoritesService,
+    @Inject(forwardRef(() => ArtistsService))
+    private artistService: ArtistsService,
+    @Inject(forwardRef(() => AlbumsService))
+    private albumService: AlbumsService,
   ) {}
 
   async findAll() {
     return await this.trackRepository.find();
   }
 
-  async removeAlbumIdFromTracks(albumId: string) {
-    const tracks = await this.trackRepository.find({ where: { albumId } });
+  async create({ artistId, albumId, ...rest }: CreateTrackDto) {
+    const artist = artistId ? await this.artistService.findOne(artistId) : null;
+    const album = albumId ? await this.albumService.findOne(albumId) : null;
 
-    const mappedTracks = tracks.map((track) => {
-      track.albumId = null;
-      return track;
+    const createdTrack = this.trackRepository.create({
+      artist,
+      album,
+      ...rest,
     });
 
-    await this.trackRepository.save(mappedTracks);
-  }
-
-  async removeArtistIdFromTracks(artistId: string) {
-    const tracks = await this.trackRepository.find({ where: { artistId } });
-
-    const mappedTracks = tracks.map((track) => {
-      track.artistId = null;
-      return track;
-    });
-
-    await this.trackRepository.save(mappedTracks);
-  }
-
-  async create(track: CreateTrackDto) {
-    const createdTrack = this.trackRepository.create(track);
     const savedTrack = await this.trackRepository.save(createdTrack);
     return savedTrack;
   }
@@ -80,11 +69,13 @@ export class TracksService {
     }
 
     if (artistId !== undefined) {
-      track.artistId = artistId;
+      track.artist = artistId
+        ? await this.artistService.findOne(artistId)
+        : null;
     }
 
     if (albumId !== undefined) {
-      track.albumId = albumId;
+      track.album = albumId ? await this.albumService.findOne(albumId) : null;
     }
 
     const updatedTrack = await this.trackRepository.save(track);
@@ -95,6 +86,5 @@ export class TracksService {
   async deleteOne(id: string) {
     await this.findOne(id);
     await this.trackRepository.delete(id);
-    await this.favoriteService.deleteTrackFromDb(id);
   }
 }

@@ -1,22 +1,36 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
-import { Favorites } from 'src/interfaces';
+import { Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { ArtistEntity } from 'src/artists/entities/artist.entity';
+import { AlbumEntity } from 'src/albums/entities/album.entity';
+import { TrackEntity } from 'src/tracks/entities/track.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('favorites')
-export class FavoritesEntity implements Favorites {
+export class FavoritesEntity {
+  @Exclude()
   @PrimaryColumn({ default: 1 })
   id: number;
 
-  @Column('uuid', { array: true })
-  artists: string[];
+  @OneToMany(() => AlbumEntity, (album) => album.favorites, {
+    nullable: true,
+    cascade: true,
+    eager: true,
+    onDelete: 'SET NULL',
+  })
+  albums: AlbumEntity[];
 
-  @Column('uuid', { array: true })
-  albums: string[];
+  @OneToMany(() => TrackEntity, (track) => track.favorites, {
+    nullable: true,
+    cascade: true,
+    eager: true,
+    onDelete: 'SET NULL',
+  })
+  tracks: TrackEntity[];
 
-  @Column('uuid', { array: true })
-  tracks: string[];
-
-  toResponse() {
-    const { artists, albums, tracks } = this;
-    return { artists, albums, tracks };
-  }
+  @OneToMany(() => ArtistEntity, (artist) => artist.favorites, {
+    nullable: true,
+    cascade: true,
+    eager: true,
+    onDelete: 'SET NULL',
+  })
+  artists: ArtistEntity[];
 }
