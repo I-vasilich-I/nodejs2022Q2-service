@@ -1,24 +1,15 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { AlbumEntity } from './albums/entities/album.entity';
-import { ArtistEntity } from './artists/entities/artist.entity';
-import { FavoritesEntity } from './favorites/entities/favorites.entity';
-import { TrackEntity } from './tracks/entities/track.entity';
-import { UserEntity } from './users/entities/user.entity';
+import { DataSourceOptions } from 'typeorm';
 import 'dotenv/config';
 
-export const config: TypeOrmModuleOptions = {
+export const config: DataSourceOptions = {
   type: 'postgres',
   host: 'postgres',
   port: +(process.env.POSTGRES_PORT as string) as number,
   username: process.env.POSTGRES_USER as string,
   password: process.env.POSTGRES_PASSWORD as string,
   database: process.env.POSTGRES_DB as string,
-  entities: [
-    UserEntity,
-    ArtistEntity,
-    AlbumEntity,
-    TrackEntity,
-    FavoritesEntity,
-  ],
-  synchronize: true,
+  entities: [__dirname + '/**/*.entity{.ts,.js}'],
+  migrations: ['dist/migrations/*{.ts,.js}'],
+  synchronize: false,
+  migrationsTransactionMode: 'each',
 };

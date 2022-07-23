@@ -21,7 +21,12 @@
     "test:auth": "cross-env TEST_MODE=auth jest --config ./test/jest-e2e.json",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "typeorm": "typeorm-ts-node-commonjs -d ./src/migration.config.ts",
+    "db:drop": "typeorm-ts-node-commonjs -d ./src/migration.config.ts schema:drop",
+    "migration:gen": "typeorm-ts-node-commonjs -d ./src/migration.config.ts migration:generate ./src/migrations/migrations",
+    "migration:up": "typeorm-ts-node-commonjs -d ./src/migration.config.ts migration:run",
+    "terminal": "docker exec -it nodejs-nest sh"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",

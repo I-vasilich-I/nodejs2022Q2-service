@@ -7,9 +7,9 @@ import {
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Track } from 'src/interfaces';
-import { ArtistEntity } from 'src/artists/entities/artist.entity';
-import { AlbumEntity } from 'src/albums/entities/album.entity';
-import { FavoritesEntity } from 'src/favorites/entities/favorites.entity';
+import { ArtistEntity } from '../../artists/entities/artist.entity';
+import { AlbumEntity } from '../../albums/entities/album.entity';
+import { FavoritesEntity } from '../../favorites/entities/favorites.entity';
 
 @Entity('track')
 export class TrackEntity implements Track {

@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { Artist } from 'src/interfaces';
-import { FavoritesEntity } from 'src/favorites/entities/favorites.entity';
+import { FavoritesEntity } from '../../favorites/entities/favorites.entity';
 
 @Entity('artist')
 export class ArtistEntity implements Artist {

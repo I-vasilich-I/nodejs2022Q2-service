@@ -6,8 +6,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import { ArtistEntity } from 'src/artists/entities/artist.entity';
-import { FavoritesEntity } from 'src/favorites/entities/favorites.entity';
+import { ArtistEntity } from '../../artists/entities/artist.entity';
+import { FavoritesEntity } from '../../favorites/entities/favorites.entity';
 import { Album } from 'src/interfaces';
 
 @Entity('album')
