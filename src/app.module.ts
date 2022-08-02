@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { ArtistsModule } from './artists/artists.module';
 import { UsersModule } from './users/users.module';
 import { AlbumsModule } from './albums/albums.module';
@@ -8,6 +9,8 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { config } from './orm.config';
 import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -20,7 +23,12 @@ import { AuthModule } from './auth/auth.module';
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(config),
   ],
-  controllers: [],
-  providers: [],
+  controllers: [AppController],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { hash, compare } from 'bcrypt';
+import { hash, compareSync } from 'bcrypt';
 import { UsersService } from 'src/users/users.service';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
@@ -29,7 +29,7 @@ export class AuthService {
     password,
   }: CreateUserDto): Promise<UserEntity | null> {
     const users = await this.userService.findAllByLogin(login);
-    const user = users.find((user) => compare(password, user.password));
+    const user = users.find((user) => compareSync(password, user.password));
 
     return user ?? null;
   }

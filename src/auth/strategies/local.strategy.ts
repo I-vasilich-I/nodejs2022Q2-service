@@ -1,6 +1,6 @@
 import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { AuthService } from '../auth.service';
 import { UserEntity } from 'src/users/entities/user.entity';
 
@@ -17,7 +17,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Incorrect login or password');
+      throw new ForbiddenException('Incorrect login or password');
     }
 
     return user;
