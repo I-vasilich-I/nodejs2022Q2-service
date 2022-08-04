@@ -149,9 +149,13 @@ paths:
               schema:
                 type: object
                 properties:
-                  token:
+                  refreshToken:
                     type: string
-                description: JWT Token
+                  accessToken:
+                    type: string
+                description: JWT Tokens
+        400: 
+          description: Bad request
         403:
           description: Incorrect login or password
   /auth/signup:
@@ -189,6 +193,40 @@ paths:
           description: Bad request
         409:
           description: Conflict. Login already exists
+  /auth/refresh:
+    post:
+      tags:
+        - Refresh
+      security: []
+      summary: Refresh
+      description: Refresh tokens and returns a JWT-tokens
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              title: example
+              properties:
+                refreshToken:
+                  type: string
+                  description: Refresh token
+              required:
+                - refreshToken
+      responses:
+        200:
+          description: Successful refresh.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  refreshToken:
+                    type: string
+                  accessToken:
+                    type: string
+                description: JWT Token
+        403:
+          description: Refresh token malformed
   /user:
     get:
       tags:

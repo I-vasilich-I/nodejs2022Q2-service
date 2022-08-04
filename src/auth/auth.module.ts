@@ -8,6 +8,9 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersModule } from 'src/users/users.module';
 import { UsersService } from 'src/users/users.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { TokenEntity } from './entities/token.entity';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 
 @Module({
   imports: [
@@ -15,6 +18,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     forwardRef(() => UsersModule),
     forwardRef(() => ConfigModule),
     JwtModule.register({}),
+    TypeOrmModule.forFeature([TokenEntity]),
   ],
   controllers: [AuthController],
   providers: [
@@ -22,6 +26,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     LocalStrategy,
     UsersService,
     JwtStrategy,
+    JwtRefreshStrategy,
     ConfigService,
   ],
 })

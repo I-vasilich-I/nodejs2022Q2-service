@@ -1,6 +1,10 @@
 import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { AuthService } from '../auth.service';
 import { UserEntity } from 'src/users/entities/user.entity';
 
@@ -11,6 +15,14 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(login: string, password: string): Promise<UserEntity> {
+    const isProperTypes =
+      typeof login === 'string' && typeof password === 'string';
+    const isEmpty = !login || !password;
+
+    if (!isProperTypes || isEmpty) {
+      throw new BadRequestException('Bad request');
+    }
+
     const user = await this.authService.validateUser({
       login,
       password,

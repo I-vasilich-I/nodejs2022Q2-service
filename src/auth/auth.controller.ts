@@ -11,6 +11,7 @@ import {
 import { Public } from 'src/custom.decorator';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthService } from './auth.service';
+import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller('auth')
@@ -33,5 +34,13 @@ export class AuthController {
   @HttpCode(200)
   async login(@Request() req) {
     return await this.authService.login(req.user);
+  }
+
+  @Public()
+  @UseGuards(JwtRefreshAuthGuard)
+  @Post('refresh')
+  @HttpCode(200)
+  async refresh(@Body() { refreshToken }: { refreshToken: string }) {
+    return await this.authService.refreshTokens(refreshToken);
   }
 }
