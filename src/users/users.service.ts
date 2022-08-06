@@ -3,50 +3,46 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { v4 as uuid } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { User, UserWithoutPassword } from 'src/interfaces';
-import { DatabaseService } from 'src/database/database.service';
+import { UserEntity } from './entities/user.entity';
+import { UserWithoutPassword } from 'src/interfaces';
 
 @Injectable()
 export class UsersService {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    @InjectRepository(UserEntity)
+    private usersRepository: Repository<UserEntity>,
+  ) {}
 
   async create(user: CreateUserDto): Promise<UserWithoutPassword> {
-    const timestamp = new Date().getTime();
-    const newUser: User = {
-      ...user,
-      id: uuid(),
-      version: 1,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    };
+    const createdUser = this.usersRepository.create(user);
 
-    this.db.users.addUser(newUser);
-    return this.getUserWithoutPassword(newUser);
+    return await this.usersRepository.save(createdUser);
   }
 
   async findAll(): Promise<UserWithoutPassword[]> {
-    return this.db.users
-      .findAll()
-      .map((user) => this.getUserWithoutPassword(user));
+    return await this.usersRepository.find();
   }
 
   async findOne(id: string): Promise<UserWithoutPassword> {
-    const user = this.db.users.findOne(id);
+    const user = await this.usersRepository.findOneBy({ id });
+
     if (!user) {
-      throw new NotFoundException(`User with ${id} doesn't exist`);
+      throw new NotFoundException(`User with id: ${id} doesn't exist`);
     }
 
-    return this.getUserWithoutPassword(user);
+    return user;
   }
 
   async updatePassword(
     id: string,
     { oldPassword, newPassword }: UpdatePasswordDto,
   ) {
-    const user = this.db.users.findOne(id);
+    const user = await this.usersRepository.findOneBy({ id });
+
     if (!user) {
       throw new NotFoundException(`User with ${id} doesn't exist`);
     }
@@ -56,25 +52,17 @@ export class UsersService {
     }
 
     user.password = newPassword;
-    user.version += 1;
-    user.updatedAt = new Date().getTime();
-    return this.getUserWithoutPassword(user);
+
+    return await this.usersRepository.save(user);
   }
 
   async deleteOne(id: string) {
-    const user = this.db.users.findOne(id);
+    const user = await this.usersRepository.findOneBy({ id });
+
     if (!user) {
       throw new NotFoundException(`User with ${id} doesn't exist`);
     }
 
-    this.db.users.deleteOne(id);
-  }
-
-  private getUserWithoutPassword({
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    password,
-    ...rest
-  }: User): UserWithoutPassword {
-    return rest;
+    await this.usersRepository.delete(id);
   }
 }

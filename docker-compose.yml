@@ -3,6 +3,7 @@ services:
     build: 
       context: .
       dockerfile: ./Dockerfile
+    container_name: nodejs-nest
     restart: always
     networks:
       - node_postgres_network
@@ -18,6 +19,7 @@ services:
     build: 
       context: .
       dockerfile: ./postgres/Dockerfile
+    container_name: nodejs-postgres
     command: -p ${POSTGRES_PORT}
     restart: always
     networks:

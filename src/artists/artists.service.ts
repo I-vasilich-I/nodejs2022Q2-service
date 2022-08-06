@@ -3,27 +3,31 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
-import { v4 as uuid } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
+import { ArtistEntity } from './entities/artist.entity';
 
 @Injectable()
 export class ArtistsService {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    @InjectRepository(ArtistEntity)
+    private artistRepository: Repository<ArtistEntity>,
+  ) {}
 
   async findAll() {
-    return this.db.artists.findAll();
+    return await this.artistRepository.find();
   }
 
   async create(artist: CreateArtistDto) {
-    const newArtist = { id: uuid(), ...artist };
-    this.db.artists.addOne(newArtist);
-    return newArtist;
+    const createdArtist = this.artistRepository.create(artist);
+
+    return await this.artistRepository.save(createdArtist);
   }
 
   async findOne(id: string, fav = false) {
-    const artist = this.db.artists.findOne(id);
+    const artist = await this.artistRepository.findOneBy({ id });
 
     if (!artist) {
       const Exception = fav ? UnprocessableEntityException : NotFoundException;
@@ -35,7 +39,7 @@ export class ArtistsService {
   }
 
   async updateOne(id: string, { name, grammy }: UpdateArtistDto) {
-    const artist = this.db.artists.findOne(id);
+    const artist = await this.artistRepository.findOneBy({ id });
 
     if (!artist) {
       throw new NotFoundException(`Artist with id: ${id} doesn't exist`);
@@ -49,21 +53,11 @@ export class ArtistsService {
       artist.grammy = grammy;
     }
 
-    return artist;
+    return await this.artistRepository.save(artist);
   }
 
   async deleteOne(id: string) {
     await this.findOne(id);
-    this.db.artists.deleteOne(id);
-    const tracks = this.db.tracks.findAllByArtistId(id);
-
-    if (tracks) {
-      tracks.map((track) => {
-        track.artistId = null;
-        return track;
-      });
-    }
-
-    this.db.favorites.deleteArtist(id);
+    await this.artistRepository.delete(id);
   }
 }

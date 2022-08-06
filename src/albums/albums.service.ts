@@ -1,34 +1,39 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
-import { v4 as uuid } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
+import { ArtistsService } from 'src/artists/artists.service';
+import { AlbumEntity } from './entities/album.entity';
 
 @Injectable()
 export class AlbumsService {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    @InjectRepository(AlbumEntity)
+    private albumRepository: Repository<AlbumEntity>,
+    @Inject(forwardRef(() => ArtistsService))
+    private artistService: ArtistsService,
+  ) {}
 
   async findAll() {
-    return this.db.albums.findAll();
+    return await this.albumRepository.find();
   }
 
-  async create(album: CreateAlbumDto) {
-    const newAlbum = { id: uuid(), ...album };
+  async create({ name, year, artistId }: CreateAlbumDto) {
+    const artist = artistId ? await this.artistService.findOne(artistId) : null;
+    const createdAlbum = this.albumRepository.create({ name, year, artist });
 
-    if (!album.artistId) {
-      newAlbum.artistId = null;
-    }
-
-    this.db.albums.addOne(newAlbum);
-    return newAlbum;
+    return await this.albumRepository.save(createdAlbum);
   }
 
   async findOne(id: string, fav = false) {
-    const album = this.db.albums.findOne(id);
+    const album = await this.albumRepository.findOneBy({ id });
 
     if (!album) {
       const Exception = fav ? UnprocessableEntityException : NotFoundException;
@@ -50,25 +55,17 @@ export class AlbumsService {
       album.year = year;
     }
 
-    if (artistId) {
-      album.artistId = artistId;
+    if (artistId !== undefined) {
+      album.artist = artistId
+        ? await this.artistService.findOne(artistId)
+        : null;
     }
 
-    return album;
+    return await this.albumRepository.save(album);
   }
 
   async deleteOne(id: string) {
     await this.findOne(id);
-    this.db.albums.deleteOne(id);
-    const tracks = this.db.tracks.findAllByAlbumId(id);
-
-    if (tracks) {
-      tracks.map((track) => {
-        track.albumId = null;
-        return track;
-      });
-    }
-
-    this.db.favorites.deleteAlbum(id);
+    await this.albumRepository.delete(id);
   }
 }

@@ -1,52 +1,66 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ArrayContains, Repository } from 'typeorm';
 import { AlbumsService } from 'src/albums/albums.service';
 import { ArtistsService } from 'src/artists/artists.service';
-import { DatabaseService } from 'src/database/database.service';
 import { TracksService } from 'src/tracks/tracks.service';
+import { FavoritesEntity } from './entities/favorites.entity';
 
 @Injectable()
 export class FavoritesService {
   constructor(
-    private db: DatabaseService,
+    @InjectRepository(FavoritesEntity)
+    private favoritesRepository: Repository<FavoritesEntity>,
+    @Inject(forwardRef(() => TracksService))
     private tracksService: TracksService,
+    @Inject(forwardRef(() => ArtistsService))
     private artistsService: ArtistsService,
+    @Inject(forwardRef(() => AlbumsService))
     private albumsService: AlbumsService,
   ) {}
 
+  async getFavorites() {
+    const favorites = await this.favoritesRepository.findOneBy({ id: 1 });
+
+    if (favorites) {
+      return favorites;
+    }
+
+    const createdFavorites = this.favoritesRepository.create({
+      tracks: [],
+      albums: [],
+      artists: [],
+    });
+    const savedFavorites = await this.favoritesRepository.save(
+      createdFavorites,
+    );
+
+    return savedFavorites;
+  }
+
   async getAll() {
-    const { tracks, artists, albums } = this.db.favorites.getAll();
-
-    const tracksArr =
-      tracks && tracks.length
-        ? await Promise.all(
-            tracks.map(async (el) => await this.tracksService.findOne(el)),
-          )
-        : [];
-
-    const artistsArr =
-      artists && artists.length
-        ? await Promise.all(
-            artists.map(async (el) => await this.artistsService.findOne(el)),
-          )
-        : [];
-
-    const albumsArr =
-      albums && albums.length
-        ? await Promise.all(
-            albums.map(async (el) => await this.albumsService.findOne(el)),
-          )
-        : [];
-
-    return { tracks: tracksArr, albums: albumsArr, artists: artistsArr };
+    return await this.getFavorites();
   }
 
   async addTrack(trackId: string) {
-    await this.tracksService.findOne(trackId, true);
-    this.db.favorites.addTrack(trackId);
+    const track = await this.tracksService.findOne(trackId, true);
+    const favorites = await this.getFavorites();
+
+    favorites.tracks.push(track);
+
+    await this.favoritesRepository.save(favorites);
   }
 
   async deleteTrack(trackId: string) {
-    const favTrack = this.db.favorites.findTrack(trackId);
+    const track = await this.tracksService.findOne(trackId);
+    const favTrack = await this.favoritesRepository.findBy({
+      tracks: ArrayContains([track]),
+    });
 
     if (!favTrack) {
       throw new NotFoundException(
@@ -54,16 +68,23 @@ export class FavoritesService {
       );
     }
 
-    this.db.favorites.deleteTrack(trackId);
+    await this.deleteTrackFromFavorites(trackId);
   }
 
   async addAlbum(albumId: string) {
-    await this.albumsService.findOne(albumId, true);
-    this.db.favorites.addAlbum(albumId);
+    const album = await this.albumsService.findOne(albumId, true);
+    const favorites = await this.getFavorites();
+
+    favorites.albums.push(album);
+
+    await this.favoritesRepository.save(favorites);
   }
 
   async deleteAlbum(albumId: string) {
-    const favAlbum = this.db.favorites.findAlbum(albumId);
+    const album = await this.albumsService.findOne(albumId);
+    const favAlbum = await this.favoritesRepository.findBy({
+      albums: ArrayContains([album]),
+    });
 
     if (!favAlbum) {
       throw new NotFoundException(
@@ -71,16 +92,22 @@ export class FavoritesService {
       );
     }
 
-    this.db.favorites.deleteAlbum(albumId);
+    await this.deleteAlbumFromFavorites(albumId);
   }
 
   async addArtist(artistId: string) {
-    await this.artistsService.findOne(artistId, true);
-    this.db.favorites.addArtist(artistId);
+    const artist = await this.artistsService.findOne(artistId, true);
+    const favorites = await this.getFavorites();
+    favorites.artists.push(artist);
+
+    await this.favoritesRepository.save(favorites);
   }
 
   async deleteArtist(artistId: string) {
-    const favArtist = this.db.favorites.findArtist(artistId);
+    const artist = await this.artistsService.findOne(artistId);
+    const favArtist = await this.favoritesRepository.findBy({
+      artists: ArrayContains([artist]),
+    });
 
     if (!favArtist) {
       throw new NotFoundException(
@@ -88,6 +115,29 @@ export class FavoritesService {
       );
     }
 
-    this.db.favorites.deleteArtist(artistId);
+    await this.deleteArtistFromFavorites(artistId);
+  }
+
+  async deleteAlbumFromFavorites(albumId: string) {
+    const favorites = await this.getFavorites();
+    favorites.albums = favorites.albums.filter((album) => album.id !== albumId);
+
+    await this.favoritesRepository.save(favorites);
+  }
+
+  async deleteArtistFromFavorites(artistId: string) {
+    const favorites = await this.getFavorites();
+    favorites.artists = favorites.artists.filter(
+      (artist) => artist.id !== artistId,
+    );
+
+    await this.favoritesRepository.save(favorites);
+  }
+
+  async deleteTrackFromFavorites(trackId: string) {
+    const favorites = await this.getFavorites();
+    favorites.tracks = favorites.tracks.filter((track) => track.id !== trackId);
+
+    await this.favoritesRepository.save(favorites);
   }
 }

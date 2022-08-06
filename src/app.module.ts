@@ -4,8 +4,9 @@ import { ArtistsModule } from './artists/artists.module';
 import { UsersModule } from './users/users.module';
 import { AlbumsModule } from './albums/albums.module';
 import { TracksModule } from './tracks/tracks.module';
-import { DatabaseModule } from './database/database.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { config } from './orm.config';
 
 @Module({
   imports: [
@@ -14,8 +15,8 @@ import { FavoritesModule } from './favorites/favorites.module';
     AlbumsModule,
     TracksModule,
     FavoritesModule,
-    DatabaseModule,
     ConfigModule.forRoot(),
+    TypeOrmModule.forRoot(config),
   ],
   controllers: [],
   providers: [],

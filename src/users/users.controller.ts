@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -8,6 +9,7 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserWithoutPassword } from 'src/interfaces';
 import { UsersService } from './users.service';
@@ -18,11 +20,13 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
   async findAll(): Promise<UserWithoutPassword[]> {
     return await this.usersService.findAll();
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Post()
   @HttpCode(201)
   async create(
@@ -31,11 +35,13 @@ export class UsersController {
     return await this.usersService.create(createUserDto);
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   async findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return await this.usersService.findOne(id);
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
   @Put(':id')
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,

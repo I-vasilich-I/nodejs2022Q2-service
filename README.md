@@ -17,11 +17,31 @@ git clone https://github.com/I-vasilich-I/nodejs2022Q2-service.git
 npm install
 ```
 
-## Running application in docker container
+## Running & testing application in docker container
 
-```bash
-npm run docker
-```
+- run container
+
+  ```bash
+  npm run docker
+  ```
+
+- open terminal inside of the container
+  
+  ```bash
+  npm run terminal
+  ```
+
+- run db migration(required init database)
+  
+  ```bash
+  npm run migration:up
+  ```
+
+- run tests
+
+  ```bash
+  npm run test
+  ```
 
 ## Scan application docker container for vulnerabilities
 
@@ -35,12 +55,6 @@ npm run scan:app
 npm run scan:db
 ```
 
-## Running application without docker
-
-```bash
-npm start
-```
-
 After starting the app on port (4000 as default) you can open
 in your browser OpenAPI documentation by typing <http://localhost:4000/doc/>.
 For more information about OpenAPI/Swagger please visit <https://swagger.io/>.
@@ -48,6 +62,20 @@ For more information about OpenAPI/Swagger please visit <https://swagger.io/>.
 ## Testing
 
 After application running open new terminal and enter:
+
+To get all containers info:
+`CONTAINER_ID, IMAGE, COMMAND, CREATED, STATUS, PORTS, NAMES`
+
+```bash
+docker container ls
+```
+
+To run command inside container
+
+```bash
+docker exec -it <CONTAINER_ID> <COMMAND>
+# docker exec -it 3467852baa44 npm run test
+```
 
 To run all tests without authorization
 
