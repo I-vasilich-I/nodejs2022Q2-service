@@ -8,7 +8,6 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UserEntity } from './entities/user.entity';
-import { UserWithoutPassword } from 'src/interfaces';
 
 @Injectable()
 export class UsersService {
@@ -17,17 +16,17 @@ export class UsersService {
     private usersRepository: Repository<UserEntity>,
   ) {}
 
-  async create(user: CreateUserDto): Promise<UserWithoutPassword> {
+  async create(user: CreateUserDto): Promise<UserEntity> {
     const createdUser = this.usersRepository.create(user);
 
     return await this.usersRepository.save(createdUser);
   }
 
-  async findAll(): Promise<UserWithoutPassword[]> {
+  async findAll(): Promise<UserEntity[]> {
     return await this.usersRepository.find();
   }
 
-  async findOne(id: string): Promise<UserWithoutPassword> {
+  async findOne(id: string): Promise<UserEntity> {
     const user = await this.usersRepository.findOneBy({ id });
 
     if (!user) {
@@ -35,6 +34,13 @@ export class UsersService {
     }
 
     return user;
+  }
+
+  async findAllByLogin(login: string): Promise<UserEntity[]> {
+    const users = await this.usersRepository.find({
+      where: { login },
+    });
+    return users;
   }
 
   async updatePassword(
